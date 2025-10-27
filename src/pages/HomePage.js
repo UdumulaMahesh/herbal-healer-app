@@ -1,6 +1,9 @@
 import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { diseaseDatabase } from '../data/diseaseData';
+import Footer from './Footer';
+// Correct path
+import TranslateDropdown from '../components/TranslateDropdown.js';
 
 const HomePage = () => {
   const navigate = useNavigate();
@@ -32,11 +35,8 @@ const HomePage = () => {
   };
 
   const analyzeImage = async (imageData) => {
-    // Simulated AI image analysis
-    // In a real app, this would call an API like Google Cloud Vision, TensorFlow, etc.
     return new Promise((resolve) => {
       setTimeout(() => {
-        // Simulate finding visual symptoms
         const possibleFindings = [
           { disease: 'Skin Allergies', confidence: 0.85, reason: 'Detected redness and rash patterns' },
           { disease: 'Fever', confidence: 0.65, reason: 'Visual indicators of illness' },
@@ -56,7 +56,6 @@ const HomePage = () => {
     setIsAnalyzing(true);
     const matches = [];
 
-    // Text-based symptom analysis
     if (symptoms.trim()) {
       const symptomList = symptoms.toLowerCase().split(',').map(s => s.trim());
       
@@ -83,19 +82,18 @@ const HomePage = () => {
       });
     }
 
-    // Image-based analysis
     if (uploadedImage) {
       const imageFindings = await analyzeImage(imagePreview);
       
       imageFindings.forEach(finding => {
         const existingMatch = matches.find(m => m.name === finding.disease);
         if (existingMatch) {
-          existingMatch.matchScore += 2; // Boost score if found in both
+          existingMatch.matchScore += 2; 
           existingMatch.imageConfidence = finding.confidence;
           existingMatch.imageReason = finding.reason;
         } else if (diseaseDatabase[finding.disease]) {
           matches.push({
-            name: finding.disease,
+            name: 'disease',
             matchScore: 2,
             data: diseaseDatabase[finding.disease],
             source: 'image',
@@ -120,7 +118,25 @@ const HomePage = () => {
   };
 
   return (
-    <div className="page-container">
+    <div 
+      className="page-container" 
+      style={{ 
+        display: 'flex', 
+        flexDirection: 'column', 
+        minHeight: '100vh',
+        position: 'relative' // 2. Add position relative to anchor the icon
+      }}
+    >
+      {/* 3. Add the dropdown component here */}
+      <div style={{ 
+        position: 'absolute', 
+        top: '1.5rem', 
+        right: '1.5rem', 
+        zIndex: 10 
+      }}>
+        <TranslateDropdown />
+      </div>
+
       <div className="hero-section">
         <div className="hero-icon">🌿</div>
         <h1 className="hero-title">Herbal Healer</h1>
@@ -274,6 +290,11 @@ const HomePage = () => {
           <p style={{fontSize: '0.85rem', color: '#6b7280'}}>Get expert advice</p>
         </div>
       </div>
+
+      <div style={{ marginTop: 'auto' }}>
+        <Footer />
+      </div>
+      
     </div>
   );
 };

@@ -1,0 +1,23 @@
+{
+  "heroTitle": "हर्बल हीलर",
+  "heroSubtitle": "बेहतर स्वास्थ्य के लिए प्राकृतिक उपचार",
+  "translateIcon": "भाषा बदलें",
+  "identificationTitle": "रोग की पहचान",
+  "symptomsLabel": "अपने लक्षणों का वर्णन करें",
+  "symptomsPlaceholder": "अपने लक्षण कोमा से अलग करके दर्ज करें (जैसे, सिरदर्द, बुखार, खांसी)",
+  "uploadImage": "तस्वीर डालें",
+  "fromGallery": "गैलरी से",
+  "takePhoto": "फोटो लें",
+  "useCamera": "कैमरे का प्रयोग करें",
+  "removeImage": "तस्वीर हटाएं",
+  "analyzeButton": "रोग की पहचान करें",
+  "analyzingButton": "विश्लेषण हो रहा है...",
+  "resultsTitle": "संभावित स्थितियाँ:",
+  "imageMatch": "छवि मिलान",
+  "symptomsMatch": "लक्षण मिलान",
+  "viewRemedies": "उपचार देखें →",
+  "browseTitle": "रोगों को ब्राउज़ करें",
+  "browseSubtitle": "सभी शर्तें देखें",
+  "consultTitle": "डॉक्टर से सलाह लें",
+  "consultSubtitle": "विशेषज्ञ की सलाह लें"
+}

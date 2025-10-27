@@ -7,6 +7,7 @@ import BrowsePage from './pages/BrowsePage';
 import RemedyPage from './pages/RemedyPage';
 import DoctorsPage from './pages/DoctorsPage';
 import DoctorDetailPage from './pages/DoctorDetailPage';
+import Chatbot from './components/Chatbot';
 
 function App() {
   return (
@@ -21,6 +22,7 @@ function App() {
           <Route path="/doctor/:id" element={<DoctorDetailPage />} />
         </Routes>
         <BottomNav />
+        <Chatbot />
       </div>
     </Router>
   );

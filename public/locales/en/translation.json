@@ -1,0 +1,23 @@
+{
+  "heroTitle": "Herbal Healer",
+  "heroSubtitle": "Natural Remedies for Better Health",
+  "translateIcon": "Change language",
+  "identificationTitle": "Disease Identification",
+  "symptomsLabel": "Describe Your Symptoms",
+  "symptomsPlaceholder": "Enter your symptoms separated by commas (e.g., headache, fever, cough)",
+  "uploadImage": "Upload Image",
+  "fromGallery": "From Gallery",
+  "takePhoto": "Take Photo",
+  "useCamera": "Use Camera",
+  "removeImage": "Remove Image",
+  "analyzeButton": "Identify Disease",
+  "analyzingButton": "Analyzing...",
+  "resultsTitle": "Possible Conditions:",
+  "imageMatch": "image match",
+  "symptomsMatch": "symptoms match",
+  "viewRemedies": "View Remedies →",
+  "browseTitle": "Browse Diseases",
+  "browseSubtitle": "View all conditions",
+  "consultTitle": "Consult Doctor",
+  "consultSubtitle": "Get expert advice"
+}

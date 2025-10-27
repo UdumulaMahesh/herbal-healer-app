@@ -46,7 +46,7 @@ export const diseaseDatabase = {
     imageKeywords: ['headache', 'head pain', 'migraine', 'person holding head']
   },
   'Indigestion': {
-    symptoms: ['stomach pain', 'bloating', 'nausea', 'heartburn', 'gas', 'fullness'],
+    symptoms: ['stomach pain','stomachache', 'bloating', 'nausea', 'heartburn', 'gas', 'fullness'],
     description: 'Discomfort in the upper abdomen during or after eating',
     herbalRemedies: [
       { 
