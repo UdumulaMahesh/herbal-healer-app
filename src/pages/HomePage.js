@@ -1,8 +1,7 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { diseaseDatabase } from '../data/diseaseData';
 import Footer from './Footer';
-// Correct path
 import TranslateDropdown from '../components/TranslateDropdown.js';
 
 const HomePage = () => {
@@ -12,17 +11,38 @@ const HomePage = () => {
   const [imagePreview, setImagePreview] = useState(null);
   const [identifiedDiseases, setIdentifiedDiseases] = useState([]);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [darkMode, setDarkMode] = useState(false);
+  const [currentTip, setCurrentTip] = useState(0);
   const fileInputRef = useRef(null);
   const cameraInputRef = useRef(null);
+
+  const healthTips = [
+    "💧 Stay hydrated — drink at least 2–3 liters of water daily.",
+    "🌿 Tulsi tea boosts immunity and reduces stress.",
+    "🥦 Eat more greens to detox your body naturally.",
+    "🧘 Practice meditation daily for mental clarity.",
+    "☀️ Morning sunlight helps balance your circadian rhythm."
+  ];
+
+  // Auto-rotating health tips
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentTip((prev) => (prev + 1) % healthTips.length);
+    }, 4000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Toggle dark mode
+  useEffect(() => {
+    document.body.classList.toggle('dark-mode', darkMode);
+  }, [darkMode]);
 
   const handleFileUpload = (event) => {
     const file = event.target.files[0];
     if (file) {
       setUploadedImage(file);
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result);
-      };
+      reader.onloadend = () => setImagePreview(reader.result);
       reader.readAsDataURL(file);
     }
   };
@@ -34,15 +54,13 @@ const HomePage = () => {
     if (cameraInputRef.current) cameraInputRef.current.value = '';
   };
 
-  const analyzeImage = async (imageData) => {
+  const analyzeImage = async () => {
     return new Promise((resolve) => {
       setTimeout(() => {
-        const possibleFindings = [
+        resolve([
           { disease: 'Skin Allergies', confidence: 0.85, reason: 'Detected redness and rash patterns' },
-          { disease: 'Fever', confidence: 0.65, reason: 'Visual indicators of illness' },
-          { disease: 'Common Cold', confidence: 0.60, reason: 'General illness symptoms visible' }
-        ];
-        resolve(possibleFindings);
+          { disease: 'Fever', confidence: 0.65, reason: 'Visual indicators of illness' }
+        ]);
       }, 2000);
     });
   };
@@ -56,21 +74,17 @@ const HomePage = () => {
     setIsAnalyzing(true);
     const matches = [];
 
+    // Text-based symptom match
     if (symptoms.trim()) {
       const symptomList = symptoms.toLowerCase().split(',').map(s => s.trim());
-      
       Object.keys(diseaseDatabase).forEach(disease => {
         const diseaseSymptoms = diseaseDatabase[disease].symptoms;
         let matchCount = 0;
-
         symptomList.forEach(symptom => {
           diseaseSymptoms.forEach(dSymptom => {
-            if (dSymptom.includes(symptom) || symptom.includes(dSymptom)) {
-              matchCount++;
-            }
+            if (dSymptom.includes(symptom) || symptom.includes(dSymptom)) matchCount++;
           });
         });
-
         if (matchCount > 0) {
           matches.push({
             name: disease,
@@ -82,18 +96,18 @@ const HomePage = () => {
       });
     }
 
+    // Image-based findings
     if (uploadedImage) {
-      const imageFindings = await analyzeImage(imagePreview);
-      
+      const imageFindings = await analyzeImage();
       imageFindings.forEach(finding => {
-        const existingMatch = matches.find(m => m.name === finding.disease);
-        if (existingMatch) {
-          existingMatch.matchScore += 2; 
-          existingMatch.imageConfidence = finding.confidence;
-          existingMatch.imageReason = finding.reason;
+        const existing = matches.find(m => m.name === finding.disease);
+        if (existing) {
+          existing.matchScore += 2;
+          existing.imageConfidence = finding.confidence;
+          existing.imageReason = finding.reason;
         } else if (diseaseDatabase[finding.disease]) {
           matches.push({
-            name: 'disease',
+            name: finding.disease,
             matchScore: 2,
             data: diseaseDatabase[finding.disease],
             source: 'image',
@@ -108,193 +122,244 @@ const HomePage = () => {
     setIdentifiedDiseases(matches);
     setIsAnalyzing(false);
 
-    if (matches.length === 0) {
-      alert('No matching diseases found. Please try different symptoms or consult a doctor.');
-    }
+    if (matches.length === 0) alert('No matching diseases found.');
   };
 
-  const viewRemedy = (disease) => {
-    navigate('/remedy', { state: { disease } });
-  };
+  const viewRemedy = (disease) => navigate('/remedy', { state: { disease } });
 
   return (
-    <div 
-      className="page-container" 
-      style={{ 
-        display: 'flex', 
-        flexDirection: 'column', 
+    <div
+      className={`page-container ${darkMode ? 'dark-mode' : ''}`}
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
         minHeight: '100vh',
-        position: 'relative' // 2. Add position relative to anchor the icon
+        position: 'relative'
       }}
     >
-      {/* 3. Add the dropdown component here */}
-      <div style={{ 
-        position: 'absolute', 
-        top: '1.5rem', 
-        right: '1.5rem', 
-        zIndex: 10 
-      }}>
+      {/* Top Controls */}
+      <div
+        style={{
+          position: 'absolute',
+          top: '1rem',
+          right: '1rem',
+          display: 'flex',
+          gap: '1rem',
+          zIndex: 10
+        }}
+      >
         <TranslateDropdown />
+        <button
+          onClick={() => setDarkMode(!darkMode)}
+          style={{
+            background: 'none',
+            border: 'none',
+            cursor: 'pointer',
+            fontSize: '1.5rem'
+          }}
+          title="Toggle Dark Mode"
+        >
+          {darkMode ? '☀️' : '🌙'}
+        </button>
       </div>
 
-      <div className="hero-section">
-        <div className="hero-icon">🌿</div>
-        <h1 className="hero-title">Herbal Healer</h1>
-        <p className="hero-subtitle">Natural Remedies for Better Health</p>
+      {/* Header */}
+      <div style={{ textAlign: 'center', marginTop: '5rem' }}>
+        <h1 style={{ fontSize: '2.5rem', color: '#059669', fontWeight: '700' }}>
+          🌿 Herbal Healer
+        </h1>
+        <p style={{ fontSize: '1.1rem', color: '#6b7280' }}>
+          Identify Diseases & Discover Natural Remedies
+        </p>
       </div>
 
-      <div className="identification-card">
-        <h2>Disease Identification</h2>
-        
-        <div className="input-group">
-          <label>Describe Your Symptoms</label>
-          <textarea
-            className="textarea-input"
-            rows="3"
-            placeholder="Enter your symptoms separated by commas (e.g., headache, fever, cough)"
-            value={symptoms}
-            onChange={(e) => setSymptoms(e.target.value)}
-          />
-        </div>
+      {/* Disease Identification Card */}
+      <div
+        className="identification-card"
+        style={{
+          background: '#ffffff',
+          borderRadius: '1rem',
+          padding: '2rem',
+          boxShadow: '0 4px 10px rgba(0,0,0,0.1)',
+          maxWidth: '700px',
+          margin: '2rem auto',
+          textAlign: 'center'
+        }}
+      >
+        <h2 style={{ color: '#065f46' }}>Disease Identification</h2>
+        <textarea
+          className="textarea-input"
+          rows="3"
+          placeholder="Enter your symptoms separated by commas (e.g., headache, fever, cough)"
+          value={symptoms}
+          onChange={(e) => setSymptoms(e.target.value)}
+          style={{
+            width: '100%',
+            padding: '0.75rem',
+            marginTop: '1rem',
+            borderRadius: '0.5rem',
+            border: '1px solid #d1d5db'
+          }}
+        />
 
-        <div className="upload-section">
-          <div className="upload-option">
+        <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem' }}>
+          <label htmlFor="file-upload" className="upload-box">
+            📁 Upload Image
             <input
               ref={fileInputRef}
               type="file"
+              id="file-upload"
               accept="image/*"
               onChange={handleFileUpload}
-              className="upload-input"
-              id="file-upload"
+              hidden
             />
-            <label htmlFor="file-upload" className="upload-label">
-              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                <circle cx="8.5" cy="8.5" r="1.5"></circle>
-                <polyline points="21 15 16 10 5 21"></polyline>
-              </svg>
-              <span>Upload Image</span>
-              <span style={{fontSize: '0.75rem', color: '#6b7280'}}>From Gallery</span>
-            </label>
-          </div>
+          </label>
 
-          <div className="upload-option">
+          <label htmlFor="camera-upload" className="upload-box">
+            📷 Take Photo
             <input
               ref={cameraInputRef}
               type="file"
+              id="camera-upload"
               accept="image/*"
               capture="environment"
               onChange={handleFileUpload}
-              className="upload-input"
-              id="camera-upload"
+              hidden
             />
-            <label htmlFor="camera-upload" className="upload-label">
-              <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
-                <circle cx="12" cy="13" r="4"></circle>
-              </svg>
-              <span>Take Photo</span>
-              <span style={{fontSize: '0.75rem', color: '#6b7280'}}>Use Camera</span>
-            </label>
-          </div>
+          </label>
         </div>
 
         {imagePreview && (
-          <div className="image-preview">
-            <img src={imagePreview} alt="Preview" className="preview-image" />
-            <button onClick={removeImage} className="remove-image-btn">
-              Remove Image
+          <div style={{ marginTop: '1rem' }}>
+            <img
+              src={imagePreview}
+              alt="Preview"
+              style={{ width: '100%', borderRadius: '0.5rem' }}
+            />
+            <button
+              onClick={removeImage}
+              className="remove-image-btn"
+              style={{
+                marginTop: '0.5rem',
+                backgroundColor: '#dc2626',
+                color: 'white',
+                border: 'none',
+                borderRadius: '5px',
+                padding: '0.5rem 1rem',
+                cursor: 'pointer'
+              }}
+            >
+              Remove
             </button>
           </div>
         )}
 
-        <button 
-          onClick={identifyDisease} 
-          className="btn-primary"
+        <button
+          onClick={identifyDisease}
           disabled={isAnalyzing}
+          style={{
+            width: '100%',
+            backgroundColor: '#059669',
+            color: 'white',
+            border: 'none',
+            padding: '0.75rem',
+            borderRadius: '0.5rem',
+            marginTop: '1.5rem',
+            fontSize: '1rem',
+            cursor: 'pointer'
+          }}
         >
-          {isAnalyzing ? (
-            <span style={{display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem'}}>
-              <span className="loading-spinner"></span>
-              Analyzing...
-            </span>
-          ) : (
-            'Identify Disease'
-          )}
+          {isAnalyzing ? 'Analyzing...' : 'Identify Disease'}
         </button>
       </div>
 
+      {/* Identified Diseases */}
       {identifiedDiseases.length > 0 && (
-        <div className="results-section">
-          <h3 className="results-title">Possible Conditions:</h3>
-          {identifiedDiseases.map((disease, index) => (
+        <div
+          className="results-section"
+          style={{ maxWidth: '700px', margin: '1rem auto', textAlign: 'left' }}
+        >
+          <h3 style={{ color: '#065f46' }}>Possible Conditions:</h3>
+          {identifiedDiseases.map((disease, i) => (
             <div
-              key={index}
-              className="disease-card"
+              key={i}
               onClick={() => viewRemedy(disease)}
+              style={{
+                background: '#ecfdf5',
+                padding: '1rem',
+                borderRadius: '0.5rem',
+                marginTop: '1rem',
+                cursor: 'pointer',
+                transition: '0.3s',
+                boxShadow: '0 2px 6px rgba(0,0,0,0.1)'
+              }}
             >
-              <div className="disease-header">
-                <h4 className="disease-name">{disease.name}</h4>
-                <span className="match-badge">
-                  {disease.matchScore} {disease.source === 'image' ? 'image match' : 'symptoms match'}
-                </span>
-              </div>
-              <p className="disease-description">{disease.data.description}</p>
-              {disease.imageConfidence && (
-                <p style={{fontSize: '0.85rem', color: '#059669', marginTop: '0.5rem'}}>
-                  📷 {disease.imageReason} ({Math.round(disease.imageConfidence * 100)}% confidence)
-                </p>
-              )}
-              <span className="view-remedies-link">View Remedies →</span>
+              <h4 style={{ color: '#065f46' }}>{disease.name}</h4>
+              <p style={{ color: '#374151' }}>{disease.data.description}</p>
             </div>
           ))}
         </div>
       )}
 
-      <div style={{display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem', marginTop: '2rem'}}>
-        <div 
-          onClick={() => navigate('/browse')}
-          style={{
-            background: 'white',
-            padding: '2rem',
-            borderRadius: '1rem',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-            cursor: 'pointer',
-            textAlign: 'center',
-            transition: 'all 0.3s'
-          }}
-          onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-4px)'}
-          onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
-        >
-          <div style={{fontSize: '2rem', marginBottom: '0.5rem'}}>📚</div>
-          <h3 style={{color: '#374151', marginBottom: '0.5rem'}}>Browse Diseases</h3>
-          <p style={{fontSize: '0.85rem', color: '#6b7280'}}>View all conditions</p>
-        </div>
+      {/* Health Tip Section */}
+      <div
+        style={{
+          background: 'linear-gradient(90deg, #d1fae5, #a7f3d0)',
+          color: '#065f46',
+          margin: '2rem auto',
+          padding: '1.5rem',
+          borderRadius: '1rem',
+          textAlign: 'center',
+          maxWidth: '700px'
+        }}
+      >
+        <strong>Tip of the Moment:</strong>
+        <p style={{ marginTop: '0.5rem', fontSize: '1rem' }}>
+          {healthTips[currentTip]}
+        </p>
+      </div>
 
-        <div 
-          onClick={() => navigate('/doctors')}
+      {/* Featured Herbs */}
+      <div style={{ margin: '2rem auto', maxWidth: '900px', textAlign: 'center' }}>
+        <h3 style={{ color: '#059669', marginBottom: '1rem' }}>🌿 Featured Herbs</h3>
+        <div
           style={{
-            background: 'white',
-            padding: '2rem',
-            borderRadius: '1rem',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-            cursor: 'pointer',
-            textAlign: 'center',
-            transition: 'all 0.3s'
+            display: 'flex',
+            overflowX: 'auto',
+            gap: '1rem',
+            padding: '1rem'
           }}
-          onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-4px)'}
-          onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
         >
-          <div style={{fontSize: '2rem', marginBottom: '0.5rem'}}>👨‍⚕️</div>
-          <h3 style={{color: '#374151', marginBottom: '0.5rem'}}>Consult Doctor</h3>
-          <p style={{fontSize: '0.85rem', color: '#6b7280'}}>Get expert advice</p>
+          {['Tulsi', 'Neem', 'Turmeric', 'Amla', 'Ashwagandha'].map((herb) => (
+            <div
+              key={herb}
+              style={{
+                minWidth: '140px',
+                background: '#ecfdf5',
+                padding: '1rem',
+                borderRadius: '1rem',
+                boxShadow: '0 2px 6px rgba(0,0,0,0.1)',
+                color: '#065f46',
+                fontWeight: '600'
+              }}
+            >
+              {herb}
+            </div>
+          ))}
         </div>
       </div>
 
-      <div style={{ marginTop: 'auto' }}>
-        <Footer />
+      {/* ✅ Floating Chat Button — single, no duplicate background */}
+      <div
+        className="chat-fab"
+        onClick={() => navigate('/assistant')}
+        title="Chat with Assistant"
+      >
+        💬
+        <div className="badge">1</div>
       </div>
-      
+
+      <Footer />
     </div>
   );
 };

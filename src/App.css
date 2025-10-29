@@ -840,3 +840,27 @@ body {
 .gap-1 { gap: 0.5rem; }
 .gap-2 { gap: 1rem; }
 .gap-3 { gap: 1.5rem; }
+
+.upload-box {
+  flex: 1;
+  border: 2px dashed #059669;
+  padding: 1rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  color: #065f46;
+  background: #f0fdf4;
+  transition: 0.3s;
+  text-align: center;
+}
+.upload-box:hover {
+  background: #d1fae5;
+  transform: scale(1.02);
+}
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 rgba(16,185,129, 0.4); }
+  70% { box-shadow: 0 0 0 15px rgba(16,185,129, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(16,185,129, 0); }
+}
+.upload-box.pulsing {
+  animation: pulse 2s infinite;
+}
