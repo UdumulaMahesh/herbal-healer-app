@@ -24,6 +24,26 @@ const HomePage = () => {
     "☀️ Morning sunlight helps balance your circadian rhythm."
   ];
 
+  // ✅ Prevent access if not logged in
+  useEffect(() => {
+    const userEmail = localStorage.getItem("userEmail");
+    if (!userEmail) {
+      navigate("/login", { replace: true });
+    }
+  }, [navigate]);
+
+  // ✅ Prevent back navigation to login/signup when logged in
+  useEffect(() => {
+    const handlePopState = () => {
+      const userEmail = localStorage.getItem("userEmail");
+      if (userEmail) {
+        navigate("/", { replace: true });
+      }
+    };
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, [navigate]);
+
   // Auto-rotating health tips
   useEffect(() => {
     const interval = setInterval(() => {
@@ -137,7 +157,7 @@ const HomePage = () => {
         position: 'relative'
       }}
     >
-      {/* Top Controls */}
+      {/* 🔹 Top Controls (Translate + Dark Mode Only) */}
       <div
         style={{
           position: 'absolute',
@@ -173,7 +193,7 @@ const HomePage = () => {
         </p>
       </div>
 
-      {/* Disease Identification Card */}
+      {/* Main Identification Card */}
       <div
         className="identification-card"
         style={{
@@ -188,7 +208,6 @@ const HomePage = () => {
       >
         <h2 style={{ color: '#065f46' }}>Disease Identification</h2>
         <textarea
-          className="textarea-input"
           rows="3"
           placeholder="Enter your symptoms separated by commas (e.g., headache, fever, cough)"
           value={symptoms}
@@ -238,7 +257,6 @@ const HomePage = () => {
             />
             <button
               onClick={removeImage}
-              className="remove-image-btn"
               style={{
                 marginTop: '0.5rem',
                 backgroundColor: '#dc2626',
@@ -273,7 +291,7 @@ const HomePage = () => {
         </button>
       </div>
 
-      {/* Identified Diseases */}
+      {/* Results */}
       {identifiedDiseases.length > 0 && (
         <div
           className="results-section"
@@ -349,7 +367,7 @@ const HomePage = () => {
         </div>
       </div>
 
-      {/* ✅ Floating Chat Button — single, no duplicate background */}
+      {/* Floating Chat Button */}
       <div
         className="chat-fab"
         onClick={() => navigate('/assistant')}
